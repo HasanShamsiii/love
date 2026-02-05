@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Be My Valentine? 💘</title>
+  <style>
+    :root{
+      --card:#ffffffd4;
+      --text:#2b2b2b;
+      --accent:#ff2d55;
+      --accent2:#7c3aed;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;              /* 👈 change from grid to flex */
+      align-items:center;        /* vertical center */
+      justify-content:center;    /* horizontal center */
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      background:#ffe4e9;
+
+    }
+
+    .hearts{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.35;
+      background:
+        radial-gradient(circle at 10% 30%, #fff 0 2px, transparent 3px),
+        radial-gradient(circle at 40% 80%, #fff 0 2px, transparent 3px),
+        radial-gradient(circle at 70% 20%, #fff 0 2px, transparent 3px),
+        radial-gradient(circle at 90% 60%, #fff 0 2px, transparent 3px);
+      filter: blur(.2px);
+      z-index:1;
+    }
+
+    .card{
+      width:min(760px, 92vw);
+      padding:28px 24px 100px;
+      border-radius:24px;
+      background:var(--card);
+      box-shadow: 0 20px 60px rgba(0,0,0,.15);
+      border:1px solid rgba(255,255,255,.6);
+      position:relative;
+      overflow:hidden;
+      z-index:2; /* above background */
+    }
+
+    .badge{
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.7);
+      border:1px solid rgba(0,0,0,.06);
+      font-weight:600;
+      letter-spacing:.2px;
+    }
+
+    h1{
+      margin:16px 0 8px;
+      font-size: clamp(34px, 4.5vw, 54px);
+      line-height:1.05;
+    }
+    p{
+      margin:0 0 18px;
+      font-size: clamp(16px, 2.2vw, 18px);
+      opacity:.9;
+    }
+    .name{
+      display:inline-block;
+      padding:0 .35em;
+      border-radius:.5em;
+      background:rgba(255,45,85,.12);
+      color:#b3002d;
+    }
+
+    .buttons{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      align-items:center;
+      margin-top:16px;
+      position:relative;
+      min-height:96px;
+    }
+
+    button{
+      border:0;
+      padding:14px 18px;
+      border-radius:14px;
+      font-size:16px;
+      font-weight:800;
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+      user-select:none;
+    }
+    button:active{transform: translateY(1px) scale(.99);}
+
+    .yes{
+      background:linear-gradient(135deg, var(--accent), #ff6a88);
+      color:white;
+      box-shadow: 0 10px 25px rgba(255,45,85,.35);
+    }
+    .yes:hover{filter:brightness(1.03);}
+
+    .no{
+      background:linear-gradient(135deg, #111827, #374151);
+      color:white;
+      box-shadow: 0 10px 25px rgba(0,0,0,.25);
+      position:absolute;
+      left:0;
+      top:0;
+      transition: left 0.65s ease, top 0.65s ease, transform 0.12s ease; /* slower */
+      touch-action:none;
+    }
+    .no:hover{filter:brightness(1.05);}
+
+    .message{
+      margin-top:14px;
+      padding:14px 16px;
+      border-radius:16px;
+      background:rgba(124,58,237,.10);
+      border:1px solid rgba(124,58,237,.18);
+      display:none;
+    }
+    .message strong{color:var(--accent2)}
+
+    .signature{
+      display:none;                 /* shows after Yes */
+      position:absolute;            /* key part */
+      bottom:18px;                  /* distance from bottom of card */
+      right:22px;                   /* distance from right of card */
+      text-align:right;
+
+      font-size:20px;
+      font-style:italic;            /* optional */
+      line-height:1.3;
+      opacity:0.95;
+
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+
+    .signature strong{
+      display:block;
+      margin-top:4px;
+      font-size:30px;
+      font-style:normal;
+      font-weight:700;
+      color:#b3002d;
+    }
+
+
+
+    /* Confetti */
+    .confetti{
+      position:fixed;
+      inset:-10vh 0 0 0;
+      pointer-events:none;
+      overflow:hidden;
+      display:none;
+      z-index:9998;
+    }
+    .confetti i{
+      position:absolute;
+      top:-10vh;
+      width:10px; height:16px;
+      border-radius:3px;
+      opacity:.9;
+      animation: fall 1.6s linear forwards;
+    }
+    @keyframes fall{
+      to{ transform: translateY(120vh) rotate(720deg); opacity:1; }
+    }
+
+    /* Heart particles */
+    .heart-burst{
+      position: fixed;
+      left: 0; top: 0;
+      width: 10px; height: 10px;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    .heart-burst span{
+      position: absolute;
+      left: 0; top: 0;
+      transform: translate(0,0) scale(1);
+      opacity: 1;
+      animation: heartFly 700ms ease-out forwards;
+      will-change: transform, opacity;
+    }
+    @keyframes heartFly{
+      to{
+        transform: translate(var(--dx), var(--dy)) scale(0.6) rotate(var(--rot));
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Background photo collage (optional) -->
+  <div class="photo-bg" aria-hidden="true"></div>
+
+  <div class="hearts" aria-hidden="true"></div>
+  <div class="confetti" id="confetti" aria-hidden="true"></div>
+
+  <main class="card" id="card">
+    <div class="badge">💌 For <span class="name" id="herName">my love</span></div>
+
+    <h1>Will you be my Valentine, <span id="titleName">Haba Ali Kashmiri</span>? ❤️</h1>
+    <p>I don't need valentines day to express my love to you but you are the best thing that has happened to me. I love you &lt;3</p>
+
+    <div class="buttons" id="buttonsArea">
+      <button class="yes" id="yesBtn">Yes! 😘</button>
+      <button class="no" id="noBtn" aria-label="No button">No 🤪</button>
+    </div>
+
+    <div class="message" id="message">
+      <p style="margin:0">
+        <strong>YAYYYYY!! As if you had a choice</strong> 🤪💖
+      </p>
+    </div>
+
+    <!-- Signature appears after she clicks Yes -->
+    <div class="signature" id="signature">
+      From yours truly,<br>
+      <strong>Hasan</strong> 
+    </div>
+  </main>
+
+  <script>
+    // ---- Customize this ----
+    const girlfriendName = "Haba Ali Kashmiri";
+    // ------------------------
+
+    document.getElementById("herName").textContent = girlfriendName;
+    document.getElementById("titleName").textContent = girlfriendName;
+
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn = document.getElementById("noBtn");
+    const msg = document.getElementById("message");
+    const signature = document.getElementById("signature");
+    const buttonsArea = document.getElementById("buttonsArea");
+    const confetti = document.getElementById("confetti");
+
+    // ---------- Confetti ----------
+    function popConfetti(){
+      confetti.innerHTML = "";
+      confetti.style.display = "block";
+      const pieces = 250;
+      for(let i=0;i<pieces;i++){
+        const bit = document.createElement("i");
+        bit.style.left = Math.random()*100 + "vw";
+        bit.style.background = `hsl(${Math.random()*360}, 90%, 60%)`;
+        bit.style.transform = `translateY(-10vh) rotate(${Math.random()*180}deg)`;
+        bit.style.animationDelay = (Math.random()*0.2) + "s";
+        bit.style.width  = (6 + Math.random()*10) + "px";
+        bit.style.height = (10 + Math.random()*14) + "px";
+        confetti.appendChild(bit);
+      }
+      setTimeout(()=> confetti.style.display="none", 1800);
+    }
+
+    // ---------- Hearts ----------
+    function heartExplosion(x, y, count = 16){
+      const wrap = document.createElement("div");
+      wrap.className = "heart-burst";
+      wrap.style.left = x + "px";
+      wrap.style.top  = y + "px";
+
+      for(let i=0; i<count; i++){
+        const s = document.createElement("span");
+        s.textContent = Math.random() < 0.5 ? "💖" : "💘";
+
+        const angle = Math.random() * Math.PI * 2;
+        const dist  = 28 + Math.random() * 60;
+        const dx = Math.cos(angle) * dist;
+        const dy = Math.sin(angle) * dist;
+
+        s.style.setProperty("--dx", dx.toFixed(1) + "px");
+        s.style.setProperty("--dy", dy.toFixed(1) + "px");
+        s.style.setProperty("--rot", (Math.random()*240 - 120).toFixed(0) + "deg");
+        s.style.animationDuration = (550 + Math.random()*350).toFixed(0) + "ms";
+        s.style.fontSize = (14 + Math.random()*14).toFixed(0) + "px";
+
+        wrap.appendChild(s);
+      }
+
+      document.body.appendChild(wrap);
+      setTimeout(() => wrap.remove(), 900);
+    }
+
+    // ---------- No button movement (SLOW + WITHIN BOUNDS) ----------
+    function placeNoNice(){
+      const areaRect = buttonsArea.getBoundingClientRect();
+      const btnRect  = noBtn.getBoundingClientRect();
+      const padding = 10;
+
+      const x = Math.min(areaRect.width - btnRect.width - padding, 200);
+      const y = 6;
+
+      noBtn.style.left = Math.max(padding, x) + "px";
+      noBtn.style.top  = Math.max(padding, y) + "px";
+    }
+
+    function moveNoWithinButtons(){
+      const areaRect = buttonsArea.getBoundingClientRect();
+      const btnRect  = noBtn.getBoundingClientRect();
+      const padding = 10;
+
+      const maxX = areaRect.width  - btnRect.width  - padding*2;
+      const maxY = areaRect.height - btnRect.height - padding*2;
+
+      const x = padding + Math.random() * Math.max(0, maxX);
+      const y = padding + Math.random() * Math.max(0, maxY);
+
+      noBtn.style.left = x + "px";
+      noBtn.style.top  = y + "px";
+    }
+
+    requestAnimationFrame(placeNoNice);
+
+    // Proximity dodge
+    let lastMoveAt = 0;
+    document.addEventListener("mousemove", (e) => {
+      if (noBtn.style.display === "none") return;
+
+      const now = performance.now();
+      if (now - lastMoveAt < 350) return;
+
+      const rect = noBtn.getBoundingClientRect();
+      const mx = e.clientX, my = e.clientY;
+      const cx = rect.left + rect.width/2;
+      const cy = rect.top  + rect.height/2;
+
+      const dist = Math.hypot(mx - cx, my - cy);
+      const triggerDistance = 150;
+
+      if (dist < triggerDistance){
+        lastMoveAt = now;
+        moveNoWithinButtons();
+        heartExplosion(mx, my, 10);
+      }
+    }, {passive:true});
+
+    // Impossible to click
+    function escapeAttempt(e){
+      if (noBtn.style.display === "none") return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const x = (e.clientX ?? (e.touches && e.touches[0]?.clientX) ?? window.innerWidth/2);
+      const y = (e.clientY ?? (e.touches && e.touches[0]?.clientY) ?? window.innerHeight/2);
+
+      noBtn.style.transform = "scale(1.06) rotate(-3deg)";
+      moveNoWithinButtons();
+      heartExplosion(x, y, 16);
+      setTimeout(() => (noBtn.style.transform = ""), 120);
+
+      return false;
+    }
+
+    ["pointerdown","mousedown","touchstart","click"].forEach(evt=>{
+      noBtn.addEventListener(evt, escapeAttempt, true);
+    });
+
+    // Yes celebration + show signature
+    yesBtn.addEventListener("click", () => {
+      msg.style.display = "block";
+      signature.style.display = "block"; // optional: show only after Yes
+      popConfetti();
+
+      const r = yesBtn.getBoundingClientRect();
+      heartExplosion(r.left + r.width/2, r.top + r.height/2, 28);
+      setTimeout(()=> heartExplosion(r.left + r.width/2, r.top + r.height/2, 22), 160);
+
+      yesBtn.textContent = "Best. Decision. Ever. 💞";
+      noBtn.style.display = "none";
+    });
+
+    window.addEventListener("resize", () => {
+      if (noBtn.style.display !== "none") placeNoNice();
+    }, {passive:true});
+  </script>
+</body>
+</html>
