@@ -197,7 +197,6 @@
 </head>
 
 <body>
-  <!-- ✅ UPDATED: playsinline helps on iOS -->
   <audio id="bgMusic" loop preload="auto" playsinline>
     <source src="chalo-doorFINAL.mp3" type="audio/mpeg">
     Your browser does not support the audio element.
@@ -244,7 +243,9 @@
     const confetti = document.getElementById("confetti");
     const bgMusic = document.getElementById("bgMusic");
 
-    // ✅ ADDED: debug logs so you know if file loads / fails
+    // ✅ Music should start only once
+    let musicStarted = false;
+
     bgMusic.addEventListener("canplaythrough", () => {
       console.log("✅ Audio loaded and ready:", bgMusic.currentSrc);
     });
@@ -369,11 +370,13 @@
       noBtn.addEventListener(evt, escapeAttempt, true);
     });
 
-    // ✅ UPDATED: start music on Yes click (with reset)
+    // ✅ UPDATED: start music only once (NO restarting)
     yesBtn.addEventListener("click", () => {
-      bgMusic.volume = 0.4;
-      bgMusic.currentTime = 0; // <--- important
-      bgMusic.play().catch(err => console.log("❌ Play failed:", err));
+      if (!musicStarted) {
+        bgMusic.volume = 0.4;
+        bgMusic.play().catch(err => console.log("❌ Play failed:", err));
+        musicStarted = true;
+      }
 
       msg.style.display = "block";
       signature.style.display = "block";
