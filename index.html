@@ -15,13 +15,12 @@
     body{
       margin:0;
       min-height:100vh;
-      display:flex;              /* 👈 change from grid to flex */
-      align-items:center;        /* vertical center */
-      justify-content:center;    /* horizontal center */
+      display:flex;
+      align-items:center;
+      justify-content:center;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
       color:var(--text);
       background:#ffe4e9;
-
     }
 
     .hearts{
@@ -47,7 +46,7 @@
       border:1px solid rgba(255,255,255,.6);
       position:relative;
       overflow:hidden;
-      z-index:2; /* above background */
+      z-index:2;
     }
 
     .badge{
@@ -116,7 +115,7 @@
       position:absolute;
       left:0;
       top:0;
-      transition: left 0.65s ease, top 0.65s ease, transform 0.12s ease; /* slower */
+      transition: left 0.65s ease, top 0.65s ease, transform 0.12s ease;
       touch-action:none;
     }
     .no:hover{filter:brightness(1.05);}
@@ -132,17 +131,15 @@
     .message strong{color:var(--accent2)}
 
     .signature{
-      display:none;                 /* shows after Yes */
-      position:absolute;            /* key part */
-      bottom:18px;                  /* distance from bottom of card */
-      right:22px;                   /* distance from right of card */
+      display:none;
+      position:absolute;
+      bottom:18px;
+      right:22px;
       text-align:right;
-
       font-size:20px;
-      font-style:italic;            /* optional */
+      font-style:italic;
       line-height:1.3;
       opacity:0.95;
-
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
     }
 
@@ -155,9 +152,6 @@
       color:#b3002d;
     }
 
-
-
-    /* Confetti */
     .confetti{
       position:fixed;
       inset:-10vh 0 0 0;
@@ -178,7 +172,6 @@
       to{ transform: translateY(120vh) rotate(720deg); opacity:1; }
     }
 
-    /* Heart particles */
     .heart-burst{
       position: fixed;
       left: 0; top: 0;
@@ -204,9 +197,13 @@
 </head>
 
 <body>
-  <!-- Background photo collage (optional) -->
-  <div class="photo-bg" aria-hidden="true"></div>
+  <!-- ✅ UPDATED: playsinline helps on iOS -->
+  <audio id="bgMusic" loop preload="auto" playsinline>
+    <source src="./chalo-door.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
 
+  <div class="photo-bg" aria-hidden="true"></div>
   <div class="hearts" aria-hidden="true"></div>
   <div class="confetti" id="confetti" aria-hidden="true"></div>
 
@@ -227,17 +224,14 @@
       </p>
     </div>
 
-    <!-- Signature appears after she clicks Yes -->
     <div class="signature" id="signature">
       From yours truly,<br>
-      <strong>Hasan</strong> 
+      <strong>Hasan</strong>
     </div>
   </main>
 
   <script>
-    // ---- Customize this ----
     const girlfriendName = "Haba Ali Kashmiri";
-    // ------------------------
 
     document.getElementById("herName").textContent = girlfriendName;
     document.getElementById("titleName").textContent = girlfriendName;
@@ -248,8 +242,16 @@
     const signature = document.getElementById("signature");
     const buttonsArea = document.getElementById("buttonsArea");
     const confetti = document.getElementById("confetti");
+    const bgMusic = document.getElementById("bgMusic");
 
-    // ---------- Confetti ----------
+    // ✅ ADDED: debug logs so you know if file loads / fails
+    bgMusic.addEventListener("canplaythrough", () => {
+      console.log("✅ Audio loaded and ready:", bgMusic.currentSrc);
+    });
+    bgMusic.addEventListener("error", () => {
+      console.log("❌ Audio error. Check that chalo-door.mp3 is in the same folder as this HTML.");
+    });
+
     function popConfetti(){
       confetti.innerHTML = "";
       confetti.style.display = "block";
@@ -267,7 +269,6 @@
       setTimeout(()=> confetti.style.display="none", 1800);
     }
 
-    // ---------- Hearts ----------
     function heartExplosion(x, y, count = 16){
       const wrap = document.createElement("div");
       wrap.className = "heart-burst";
@@ -296,7 +297,6 @@
       setTimeout(() => wrap.remove(), 900);
     }
 
-    // ---------- No button movement (SLOW + WITHIN BOUNDS) ----------
     function placeNoNice(){
       const areaRect = buttonsArea.getBoundingClientRect();
       const btnRect  = noBtn.getBoundingClientRect();
@@ -326,7 +326,6 @@
 
     requestAnimationFrame(placeNoNice);
 
-    // Proximity dodge
     let lastMoveAt = 0;
     document.addEventListener("mousemove", (e) => {
       if (noBtn.style.display === "none") return;
@@ -349,7 +348,6 @@
       }
     }, {passive:true});
 
-    // Impossible to click
     function escapeAttempt(e){
       if (noBtn.style.display === "none") return;
 
@@ -371,10 +369,14 @@
       noBtn.addEventListener(evt, escapeAttempt, true);
     });
 
-    // Yes celebration + show signature
+    // ✅ UPDATED: start music on Yes click (with reset)
     yesBtn.addEventListener("click", () => {
+      bgMusic.volume = 0.4;
+      bgMusic.currentTime = 0; // <--- important
+      bgMusic.play().catch(err => console.log("❌ Play failed:", err));
+
       msg.style.display = "block";
-      signature.style.display = "block"; // optional: show only after Yes
+      signature.style.display = "block";
       popConfetti();
 
       const r = yesBtn.getBoundingClientRect();
